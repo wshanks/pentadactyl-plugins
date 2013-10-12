@@ -37,7 +37,7 @@ var INFO =
     ["p", {},
     	"It is recommended that most of the following passkeys be set for ",
     	["tt", {}, 'https://web.tweetdeck.com'],
-    	": ", ["str", {}, "rtnpa?s<Left><Right><Up><Down><Return>0"]]];
+    	": ", ["str", {}, "rnpa?s<Left><Right><Up><Down><Return>0"]]];
 
 // Add keybindings for selecting/changing columns in Tweetdeck
 // Allows Pentadactyl's scrolling commands (e.g. j, k, <Space>, etc.)
