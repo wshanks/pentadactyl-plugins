@@ -23,6 +23,23 @@ commands.execute(":group plugin-brief -n "+
 // Have to use commands.execute to create a command that works elsewhere
 commands.execute(":command! briefopen -n -desc 'Open Brief RSS reader' " +
 	"-js Brief.open()");
+commands.execute(":command! briefcheck -n -desc 'Check Brief unread item count' " +
+	"-js plugins.brief.briefcheck()")
+	
+function briefcheck() {
+	var checkedDate = new Date(1000*
+		parseInt(Brief.prefs.getIntPref('update.lastUpdateTime')));
+	
+	let query = new Brief.query({
+		deleted: Brief.storage.ENTRY_STATE_NORMAL,
+		read: false
+	});
+	
+	query.getEntryCount(function(unreadEntriesCount) {
+		dactyl.echo('Brief unread: ' + unreadEntriesCount + '.  ' + 
+			'Last checked: ' + checkedDate.toString());
+	});
+}
 
 //Needed for scope to load Brief's Storage resource with naming conflict
 var localNS = new Object(); 
@@ -541,6 +558,13 @@ INFO.push(["item", {},
         ["spec", {}, ':briefopen'],
         ["description", { short: "true" },
             ["p", {}, 'Open/focus Brief.']]]);
+            
+INFO.push(["item", {},
+        ["tags", {}, ':briefcheck'],
+        ["spec", {}, ':briefcheck'],
+        ["description", {},
+            ["p", {}, 'Check Brief unread count and last checked time (This function' + 
+            ' does not update all feeds.', ['ex',{},':briefupdate'], ' does).']]]);
             
 INFO.push(['item', {},
 	['tags',{},'brief-load-passkeys'],
