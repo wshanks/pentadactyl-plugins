@@ -83,11 +83,11 @@ var Actions = new Object();
 Actions['briefview'] = {
 	description: 'View a Brief folder/feed',
 	mapping: {
-		keys: ['bV'],
-		openExMode: true},
-	noPromptMapping: {
 		keys: ['bv'],
-		openExMode: false},
+		openExMode: true},
+/*	noPromptMapping: {
+		keys: ['bv'],
+		openExMode: false}, */
 	defaultArgument: 'All items',
 	argName: 'feed',
 	extraDescription: function() {
@@ -181,11 +181,11 @@ Actions['briefmark'] = {
 Actions['briefreveal'] = {
 	description: 'Reveal all/unread/starred items',
 	mapping: {
-		keys: ['bR'],
-		openExMode: true},
-	noPromptMapping: {
 		keys: ['br'],
-		openExMode: false},
+		openExMode: true},
+/*	noPromptMapping: {
+		keys: ['br'],
+		openExMode: false}, */
 	defaultArgument: 'all',
 	argName: 'filter',
 	extraDescription: function() {
@@ -348,11 +348,11 @@ Actions['briefsidebar'] = {
 Actions['briefupdate'] = {
 	description: 'Update a Brief folder/feed',
 	mapping: {
-		keys: ['bU'],
-		openExMode: true},
-	noPromptMapping: {
 		keys: ['bu'],
-		openExMode: false},
+		openExMode: true},
+/*	noPromptMapping: {
+		keys: ['bu'],
+		openExMode: false}, */
 	defaultArgument: 'All items',
 	argName: 'feed',
 	extraDescription: function() {
