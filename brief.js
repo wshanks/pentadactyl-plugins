@@ -4,7 +4,7 @@
 /* globals window, Components */
 var INFO =
 ['plugin', { name: 'brief',
-             version: '2.0.0',
+             version: '2.1.0',
              href: 'https://github.com/willsALMANJ/pentadactyl-plugins',
              summary: 'Brief navigation and key mappings',
              xmlns: 'dactyl' },
@@ -56,7 +56,7 @@ group.options.add(['brief-load-passkeys'],
     	setter: loadPasskeys
      });
 
-var defaultPasskeys='jkh<Enter>';
+var defaultPasskeys='<Enter>';
 
 function loadPasskeys(values) {
 	let passOpt=options.get('brief-load-passkeys');
@@ -353,6 +353,80 @@ Actions.briefexpand = {
 	
 	command: function(args) {
 		Brief.win.Commands.toggleSelectedEntryCollapsed()
+	},
+	options: {
+		argCount: 0
+	}
+};
+
+Actions.briefselectnext = {
+	description: 'Select next entry (auto-collpase/expand in headlines mode)',
+	mapping: {
+		keys: ['j'],
+		openExMode: false},
+	
+	command: function(args) {
+		let gView = Brief.win.gCurrentView
+		if (gView.headlinesMode && gView.selectedEntry) {
+			let entryView = gView.getEntryView(gView.selectedEntry);
+			if (!entryView.collapsed)
+				entryView.collapse(true);
+		}
+		let count = args.count || 1
+		if (count === 1) {
+			gView.selectNextEntry()
+		} else {
+			let selectedIndex = gView.getEntryIndex(gView.selectedEntry)
+			for (let idx = count; idx > 0; idx--) {
+				let nextEntry = gView._loadedEntries[selectedIndex + idx]
+				if (nextEntry) {
+					gView.selectEntry(nextEntry, true, true)
+					break
+				}
+			}
+		}
+		if (gView.headlinesMode && gView.selectedEntry) {
+			let entryView = gView.getEntryView(gView.selectedEntry);
+			if (entryView.collapsed)
+				entryView.expand(true);
+		}
+	},
+	options: {
+		argCount: 0
+	}
+};
+
+Actions.briefselectprevious = {
+	description: 'Select previous entry (auto-collpase/expand in headlines mode)',
+	mapping: {
+		keys: ['k'],
+		openExMode: false},
+	
+	command: function(args) {
+		let gView = Brief.win.gCurrentView
+		if (gView.headlinesMode && gView.selectedEntry) {
+			let entryView = gView.getEntryView(gView.selectedEntry);
+			if (!entryView.collapsed)
+				entryView.collapse(true);
+		}
+		let count = args.count || 1
+		if (count === 1) {
+			gView.selectPrevEntry()
+		} else {
+			let selectedIndex = gView.getEntryIndex(gView.selectedEntry)
+			for (let idx = count; idx > 0; idx--) {
+				let prevEntry = gView._loadedEntries[selectedIndex - idx]
+				if (prevEntry) {
+					gView.selectEntry(prevEntry, true, true)
+					break
+				}
+			}
+		}
+		if (gView.headlinesMode && gView.selectedEntry) {
+			let entryView = gView.getEntryView(gView.selectedEntry);
+			if (entryView.collapsed)
+				entryView.expand(true);
+		}
 	},
 	options: {
 		argCount: 0
