@@ -1,7 +1,7 @@
 "use strict";
 var INFO =
 ["plugin", { name: "brief",
-             version: "1.0.0",
+             version: "2.0.0",
              href: "https://github.com/willsALMANJ/pentadactyl-plugins",
              summary: "Brief navigation and key mappings",
              xmlns: "dactyl" },
@@ -31,11 +31,12 @@ function briefcheck() {
 		parseInt(Brief.prefs.getIntPref('update.lastUpdateTime')));
 	
 	let query = new Brief.query({
+		includeFeedsExcludedFromGlobalViews: false,
 		deleted: Brief.storage.ENTRY_STATE_NORMAL,
 		read: false
 	});
 	
-	query.getEntryCount(function(unreadEntriesCount) {
+	query.getEntryCount().then(unreadEntriesCount => {
 		dactyl.echo('Brief unread: ' + unreadEntriesCount + '.  ' + 
 			'Last checked: ' + checkedDate.toString());
 	});
@@ -175,13 +176,13 @@ Actions['briefmark'] = {
 		
 		switch (mode) {
 			case 'single':
-				Brief.doCommand('toggleSelectedEntryRead');
+				Brief.win.Commands.toggleSelectedEntryRead();
 				break
 			case 'view':
-				Brief.doCommand('markViewRead');
+				Brief.win.Commands.markViewRead();
 				break
 			case 'visible':
-				Brief.doCommand('markVisibleEntriesRead');
+				Brief.win.Commands.markVisibleEntriesRead();
 				break
 		}
 	},
@@ -221,13 +222,13 @@ Actions['briefreveal'] = {
 		
 		switch (mode) {
 			case 'all':
-				Brief.doCommand('showAllEntries');
+				Brief.win.Commands.switchViewFilter('all')
 				break
 			case 'unread':
-				Brief.doCommand('showUnreadEntries');
+				Brief.win.Commands.switchViewFilter('unread')
 				break
 			case 'starred':
-				Brief.doCommand('showStarredEntries');
+				Brief.win.Commands.switchViewFilter('starred')
 				break
 		}
 		window.content.location.reload();
@@ -250,7 +251,19 @@ Actions['briefheadlines'] = {
 		openExMode: false},
 	
 	command: function(args) {
-		Brief.doCommand('toggleHeadlinesView');
+		let mode
+		if (Brief.win.FeedList.selectedFeed) {
+			mode = (Brief.win.FeedList.selectedFeed.viewMode + 1) % 2
+			Brief.win.Storage.changeFeedProperties({
+				feedID: Brief.win.FeedList.selectedFeed.feedID,
+				viewMode: mode
+			})
+		} else {
+			mode = (Brief.win.Prefs.getIntPref('feedview.mode') + 1) % 2
+			Brief.win.Prefs.setIntPref('feedview.mode', mode)
+		}
+
+		Brief.win.gCurrentView.refresh()
 	},
 	options: {
 		argCount: 0
@@ -264,7 +277,7 @@ Actions['briefdelete'] = {
 		openExMode: false},
 	
 	command: function(args) {
-		Brief.doCommand('deleteOrRestoreSelectedEntry');
+		Brief.win.Commands.deleteOrRestoreSelectedEntry();
 	},
 	options: {
 		argCount: 0
@@ -278,7 +291,7 @@ Actions['briefbookmark'] = {
 		openExMode: false},
 	
 	command: function(args) {
-		Brief.doCommand('toggleSelectedEntryStarred');
+		Brief.win.Commands.toggleSelectedEntryStarred();
 	},
 	options: {
 		argCount: 0
@@ -306,11 +319,11 @@ Actions['brieffind'] = {
 			mode='focus';
 		}
 		
-		var searchbar=window.content.document.getElementById('searchbar');
+		var searchbar=Brief.win.getElement('searchbar')
 		
 		switch (mode) {
 			case 'focus':
-				Brief.doCommand('focusSearchbar')
+				searchbar.focus()
 				break
 			case 'clear':
 				searchbar.reset();
@@ -336,7 +349,7 @@ Actions['briefexpand'] = {
 		openExMode: false},
 	
 	command: function(args) {
-		Brief.doCommand('toggleSelectedEntryCollapsed')
+		Brief.win.Commands.toggleSelectedEntryCollapsed()
 	},
 	options: {
 		argCount: 0
@@ -350,11 +363,11 @@ Actions['briefsidebar'] = {
 		openExMode: false},
 	
 	command: function(args) {
-		var sidebar=window.content.document.getElementById('sidebar');
+		var sidebar=Brief.win.getElement('sidebar');
 		if (sidebar.hidden) {
-			Brief.doCommand('revealSidebar');
+			Brief.win.Commands.revealSidebar();
 		} else {
-			Brief.doCommand('hideSidebar');
+			Brief.win.Commands.hideSidebar();
 		}
 	},
 	options: {
@@ -402,10 +415,10 @@ Actions['briefupdate'] = {
 		
 		switch (title) {
 			case 'All items':
-				Brief.doCommand('updateAllFeeds');
+				Brief.win.FeedUpdateService.updateAllFeeds();
 				break
 			case 'stop':
-				Brief.doCommand('stopUpdating');
+				Brief.win.FeedUpdateService.stopUpdating();
 				break
 			default:
 				var matches=window.content.document.getElementsByAttribute('title',title);
@@ -466,14 +479,14 @@ Actions['brieftoggle'] = {
 	
 		var folder;
 		if (title=='current') {
-			var viewlist=window.content.document.getElementById('view-list');
+			var viewlist=Brief.win.content.document.getElementById('view-list');
 			var folder=viewlist.selectedItem;
 			if (folder.tagName!='richtreefolder') {
 				dactyl.echoerr('Current selection is not a feed folder.');
 				return
 			}
 		} else {
-			var matches=window.content.document.getElementsByAttribute('title',title);
+			var matches=Brief.win.content.document.getElementsByAttribute('title',title);
 			if (matches.length==0) {
 				dactyl.echoerr('No folder found with that title.');
 				return
@@ -482,7 +495,7 @@ Actions['brieftoggle'] = {
 			folder=window.content.document.getElementById(matches[0].getAttribute('id'));
 		}
 		
-		folder.toggleOpen();
+		folder.setAttribute('open', !folder.openState)
 	},
 	options: {
 		literal: 0,
