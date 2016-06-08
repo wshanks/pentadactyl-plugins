@@ -25,9 +25,10 @@ commands.execute(':group plugin-brief -n '+
 // Previous command restricts all group methods to briefURL.
 // Have to use commands.execute to create a command that works elsewhere
 commands.execute(':command! briefopen -n -desc "Open Brief RSS reader" ' +
-	'-js Brief.open()');
+	'-js plugins.brief.briefopen()');
 commands.execute(':command! briefcheck -n -desc "Check Brief unread item count" ' +
 	'-js plugins.brief.briefcheck()')
+// group.autocmd.add(['DOMLoad'], briefURL, function() {expandselected()})
 	
 function briefcheck() {
 	var checkedDate = new Date(1000*
@@ -43,6 +44,24 @@ function briefcheck() {
 		dactyl.echo('Brief unread: ' + unreadEntriesCount + '.  ' + 
 			'Last checked: ' + checkedDate.toString());
 	});
+}
+
+function expandselected() {
+		let gView = Brief.win.gCurrentView
+		let selectedIndex = gView.getEntryIndex(gView.selectedEntry)
+		if (gView.headlinesMode && gView.selectedEntry) {
+			let entryView = gView.getEntryView(gView.selectedEntry);
+			if (entryView.collapsed)
+				entryView.expand(true);
+		}
+}
+
+function briefopen() {
+	Brief.open()
+	// Ugly hack -- can we detect when the page is finished loading?
+	window.setTimeout(expandselected, 500)
+	window.setTimeout(expandselected, 1000)
+	window.setTimeout(expandselected, 2000)
 }
 
 //Needed for scope to load Brief's Storage resource with naming conflict
